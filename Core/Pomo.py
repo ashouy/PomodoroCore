@@ -1,3 +1,9 @@
+'''---------------------------------------------------
+                    POMODORO CORE
+                AUTHOR: JOFFREY PEYRAC
+                        v. 1.0
+        Ultima revisão em: 16/06/2019 (dd/mm/YYYY)
+  ----------------------------------------------------'''
 import paho.mqtt.client as mqtt
 import sys
 import RPi.GPIO as GPIO
@@ -19,7 +25,7 @@ umidadeMaxima = [337, 459, 566]
 bombaligada = 0
 mudouTemporada = 1
 temporada = 1
-diaspassados = 0;
+diaspassados = 0
 
 #definicoes Broker
 Broker = "192.168.50.1"
