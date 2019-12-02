@@ -7,7 +7,7 @@
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
 #include<Wire.h>
-
+//teste
 //Topico para publicar
 #define TOPICO_PUBLISH_UMIDADE "UmidadeSolo"
 #define TOPICO_SUBSCRIBE "Regra"
