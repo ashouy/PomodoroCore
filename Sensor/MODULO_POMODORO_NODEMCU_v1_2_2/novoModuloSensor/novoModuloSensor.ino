@@ -241,17 +241,17 @@
 #include <PubSubClient.h>
 
 //wifi
-const char *ssid =  "WiFi network";   // name of your WiFi network
-const char *password =  "password"; // password of the WiFi network
+const char *ssid =  "JC";   // name of your WiFi network
+const char *password =  "87030663as"; // password of the WiFi network
 
 //topico
 const char *TOPIC = "helloWorld";  // Topic to subcribe to
 
-const char *ID = "esp32";  // Name of our device, must be unique
+#define ID "esp32"  // Name of our device, must be unique
 
 //broker
-const char *port = 1883 // port
-const char *borkerIP = "465464" //mosquitto broker (change later)
+int port = 1883; // port
+const char *borkerIP = "test.mosquitto.org"; //mosquitto broker (change later)
 
 WiFiClient wclient;
 PubSubClient client(wclient); // Setup MQTT client
@@ -300,7 +300,8 @@ void reconnect() {
 }
 //set address n' port
 void initMqtt(){
-  MQTT.setServer(BROKER_MQTT, BROKER_PORT);
+  client.setServer(borkerIP,port);
+  Serial.println("ok");
 }
 
 void setup() {
@@ -319,7 +320,7 @@ void loop() {
   client.loop();
   client.publish(TOPIC, "hello word");
   Serial.println((String)TOPIC);
-  delay(2000)
+  delay(2000);
 }
 
 //https://www.digikey.com/en/maker/projects/send-and-receive-messages-to-your-iot-devices-using-mqtt/39ed5690cc46473abe8904c8f960341f?utm_adgroup=General&utm_term=&slid=&gclid=CjwKCAiArJjvBRACEiwA-Wiqq_DcwDJ3EqaccZF2aFgkJBe3oi3cYWcfste0hW4MC4N6vyfVWMc2NxoCqDEQAvD_BwE&utm_campaign=Dynamic+Search_EN_Product&utm_medium=cpc&utm_source=google
