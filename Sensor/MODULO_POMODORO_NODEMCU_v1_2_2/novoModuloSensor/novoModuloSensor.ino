@@ -3,26 +3,27 @@
 #include <PubSubClient.h>
 
 //wifi
-const char *ssid =  "JC";   // name of your WiFi network
-const char *password =  "password"; // password of the WiFi network
+const char *ssid =  "Rpi3-AP";   // name of your WiFi network
+const char *password =  "raspberry"; // password of the WiFi network
 
 //topic
-#define *topicToPublish = "UmidadedeSolo"  // Topic to publish
-#define *topicToSubscribe ="Regra" // Topic to subscribe
+#define topicToPublish  "UmidadeSolo"  // Topic to publish
+#define topicToSubscribe "Regra" // Topic to subscribe
 
 // Name of our device, must be unique
-#define ID "esp32"
+#define ID "NodeMCU"
 
 //broker
 int port = 1883; // port
-const char *borkerIP = "test.mosquitto.org"; //mosquitto broker (change later)
+const char *borkerIP = "192.168.50.1"; //mosquitto broker (change later)
 
-WiFiClient wclient;
-PubSubClient client(wclient); // Setup MQTT client
+//mqtt client
+WiFiClient wclient;//wifi client
+PubSubClient client(wclient); //constructor receive a wifi client object
 
 //sensores
 #define sensor1 36
-#define sensro2 39
+#define sensor2 39
 #define sensor3 34
 int selectedSensor, sensorValue, sleepTime;
 int inputs[] = {0,1,2};
@@ -45,6 +46,7 @@ void reconnectMQTT();
 //set address n' port
 void initMqtt(){
   client.setServer(borkerIP,port);
+  client.setCallback(mqtt_callback);
 }
 
 // Connect to WiFi network
@@ -52,7 +54,7 @@ void setup_wifi() {
   if (WiFi.status() == WL_CONNECTED){
     return;
   }
-  digitalWrite(ledpinWiFierro,HIGH)// on if is not connected
+  digitalWrite(ledpinWiFierro,HIGH);// on if is not connected
   Serial.print("\nConnecting to ");
   Serial.println(ssid);
   WiFi.begin(ssid, password); // Connect to network
@@ -60,8 +62,7 @@ void setup_wifi() {
     delay(500);
     Serial.print(".");
   }
-  digitalWrite(ledpinWiFierro,LOW)// off if is not connected
-  Serial.println();
+  digitalWrite(ledpinWiFierro,LOW);// off if is not connected
   Serial.println("WiFi connected");
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
@@ -74,11 +75,11 @@ void reconnect() {
     Serial.print("Attempting MQTT connection...");
     // Attempt to connect
     digitalWrite(ledPinMQTTerro,HIGH); // on if is not connected
-    if (client.connect(ID)) {
+    if (client.connect(ID,"JoffrMQTT","mosquito")) {
       digitalWrite(ledPinMQTTerro,LOW); // off if is not connected
       Serial.println("connected");
       Serial.print("Publishing to: ");
-      Serial.println(TOPIC);
+      Serial.println(topicToPublish);
       Serial.println('\n');
       client.subscribe(topicToSubscribe);
     } else {
@@ -97,11 +98,18 @@ void verifyConnections(void){
   setup_wifi();
 }
 
-void mqtt_callback(char* topicSubscribed, byte* payload, un =signed int length){
+void mqtt_callback(char* topicSubscribed, byte* payload, unsigned int length){
   Serial.println(topicSubscribed);
   if(length ==2){
     char p = (char)payload[0];
-    sensor = (p-'0')-1;
+    selectedSensor = (p-'0')-1;
+    if(selectedSensor == 0){
+      selectedSensor = 10;
+    }else if(selectedSensor = 1){
+      selectedSensor = 20;
+    }else{
+      selectedSensor = 30;
+    }
     String b;
     b += (char)payload[1];
     if(b.equals("0")){
@@ -112,14 +120,14 @@ void mqtt_callback(char* topicSubscribed, byte* payload, un =signed int length){
       sleepTime = 3600000000;
     }
     if(!lastMessage){
-    lastMesage = true;
+    lastMessage = true;
     sleepTime = 500;  
   }
   }
 }
 
 void request(int selectedSensor){
-  sensorValue += analogRead(selectedSensor)
+  sensorValue += selectedSensor;
 }
 
 void sendOutputState(void){
@@ -131,7 +139,7 @@ void sendOutputState(void){
   Serial.println(sensorValue);
 
   char sensorValueFormatted[10];
-  sprintf(aux, "%d", sensorValue);
+  sprintf(sensorValueFormatted, "%d", sensorValue);
   char* pointerValueFormatted = sensorValueFormatted;
 
   client.publish(topicToPublish,pointerValueFormatted);
@@ -142,7 +150,7 @@ void sendOutputState(void){
 
 void setup() {
   Serial.begin(115200); // Start serial communication at 115200 baud
-  sensor = 0;
+  selectedSensor = 0;
   lastMessage = false;
   sleepTime = 500000;
   pinMode(ledPinMQTTerro,OUTPUT);
@@ -155,12 +163,13 @@ void setup() {
 }
 
 void loop() {
+  
    // Reconnect if connection is lost
   verifyConnections();
   
   if(lastMessage){
+    Serial.println("enviando mensagem");
     sendOutputState();
-
     //deep sleep here
   }
   delay(2000);
