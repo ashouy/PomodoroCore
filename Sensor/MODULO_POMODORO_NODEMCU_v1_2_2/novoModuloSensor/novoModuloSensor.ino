@@ -28,6 +28,7 @@ PubSubClient client(wclient); //constructor receive a wifi client object
 int selectedSensor, sensorValue, sleepTime;
 int inputs[] = {0,1,2};
 bool lastMessage;
+char s;
 
 //leds
 #define ledPinMQTTerro 32
@@ -83,7 +84,7 @@ void reconnect() {
       Serial.println('\n');
       client.subscribe(topicToSubscribe);
     } else {
-      Serial.println(" try again in 5 seconds");
+      Serial.println("try again in 5 seconds");
       // Wait 5 seconds before retrying
       delay(2000);
       digitalWrite(ledPinMQTTerro,HIGH); // on if is not connected
@@ -102,13 +103,12 @@ void mqtt_callback(char* topicSubscribed, byte* payload, unsigned int length){
   Serial.println(topicSubscribed);
   if(length ==2){
     char p = (char)payload[0];
-    selectedSensor = (p-'0')-1;
-    if(selectedSensor == 0){
-      selectedSensor = 10;
-    }else if(selectedSensor = 1){
-      selectedSensor = 20;
+    if(p == '1'){
+      selectedSensor = sensor1;
+    }else if(p == '2'){
+      selectedSensor = sensor2;
     }else{
-      selectedSensor = 30;
+      selectedSensor = sensor3;
     }
     String b;
     b += (char)payload[1];
@@ -122,12 +122,12 @@ void mqtt_callback(char* topicSubscribed, byte* payload, unsigned int length){
     if(!lastMessage){
     lastMessage = true;
     sleepTime = 500;  
-  }
+    }
   }
 }
 
 void request(int selectedSensor){
-  sensorValue += selectedSensor;
+  sensorValue += analogRead(selectedSensor);
 }
 
 void sendOutputState(void){
@@ -165,14 +165,16 @@ void setup() {
 void loop() {
   
    // Reconnect if connection is lost
-  verifyConnections();
   
+  verifyConnections();
   if(lastMessage){
-    Serial.println("enviando mensagem");
+    Serial.print("sensor utilizado: ");
+    Serial.println(selectedSensor);
     sendOutputState();
-    //deep sleep here
+    //deep sleep here   
   }
-  delay(2000);
+  client.loop();
+  delay(3000);
 }
-
+//https://randomnerdtutorials.com/esp32-deep-sleep-arduino-ide-wake-up-sources/
 //https://www.digikey.com/en/maker/projects/send-and-receive-messages-to-your-iot-devices-using-mqtt/39ed5690cc46473abe8904c8f960341f?utm_adgroup=General&utm_term=&slid=&gclid=CjwKCAiArJjvBRACEiwA-Wiqq_DcwDJ3EqaccZF2aFgkJBe3oi3cYWcfste0hW4MC4N6vyfVWMc2NxoCqDEQAvD_BwE&utm_campaign=Dynamic+Search_EN_Product&utm_medium=cpc&utm_source=google
