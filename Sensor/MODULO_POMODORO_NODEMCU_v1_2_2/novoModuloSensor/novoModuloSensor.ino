@@ -128,6 +128,7 @@ void mqtt_callback(char* topicSubscribed, byte* payload, unsigned int length){
 
 void request(int selectedSensor){
   sensorValue += analogRead(selectedSensor);
+  sensorValue = map(sensorValue,0,4095,0,1023);
 }
 
 void sendOutputState(void){
