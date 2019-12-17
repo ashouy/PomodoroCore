@@ -128,13 +128,13 @@ void mqtt_callback(char* topicSubscribed, byte* payload, unsigned int length){
 
 void request(int selectedSensor){
   sensorValue += analogRead(selectedSensor);
-  sensorValue = map(sensorValue,0,4095,0,1023);
 }
-
 void sendOutputState(void){
   for(int i = 0; i<numberOfSamples; i++){
     request(selectedSensor);
   }
+ 
+  sensorValue = map(sensorValue,0,4095,0,1023);
   sensorValue = sensorValue/numberOfSamples;
   Serial.print("Average: ");
   Serial.println(sensorValue);
@@ -175,7 +175,7 @@ void loop() {
     //deep sleep here   
   }
   client.loop();
-  delay(3000);
+  delay(6000);
 }
 //https://randomnerdtutorials.com/esp32-deep-sleep-arduino-ide-wake-up-sources/
 //https://www.digikey.com/en/maker/projects/send-and-receive-messages-to-your-iot-devices-using-mqtt/39ed5690cc46473abe8904c8f960341f?utm_adgroup=General&utm_term=&slid=&gclid=CjwKCAiArJjvBRACEiwA-Wiqq_DcwDJ3EqaccZF2aFgkJBe3oi3cYWcfste0hW4MC4N6vyfVWMc2NxoCqDEQAvD_BwE&utm_campaign=Dynamic+Search_EN_Product&utm_medium=cpc&utm_source=google
