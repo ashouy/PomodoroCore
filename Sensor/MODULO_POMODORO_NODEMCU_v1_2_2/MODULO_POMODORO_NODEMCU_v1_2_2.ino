@@ -72,7 +72,6 @@ void setup() {
   //initSerial(); //init serial monitor, not necessary now
   initWiFi();
   initMQTT();
-
 }
 //called on setup()
 void initWiFi() {
@@ -166,7 +165,7 @@ void solicitacao(int s){
   Wire.requestFrom(8,13);
   if(Wire.available()>=2){
     int iRXVal;
-    for (int i = 0; i < 2; i++){             // Receive and rebuild the 'int'.
+    for (int i = 0; i < 2; i++){  // Receive and rebuild the 'int'.
       iRXVal += Wire.read() << (i * 8);   //    "     "     "     "    "
     }
     valorSensor += iRXVal;

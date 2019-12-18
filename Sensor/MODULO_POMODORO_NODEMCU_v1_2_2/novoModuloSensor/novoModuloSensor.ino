@@ -150,6 +150,7 @@ void sendOutputState(void){
 }
 
 void setup() {
+  esp_sleep_enable_timer_wakeup(sleepTime);
   Serial.begin(115200); // Start serial communication at 115200 baud
   selectedSensor = 0;
   lastMessage = false;
@@ -172,10 +173,10 @@ void loop() {
     Serial.print("sensor utilizado: ");
     Serial.println(selectedSensor);
     sendOutputState();
-    //deep sleep here   
+    esp_deep_sleep_start();   
   }
   client.loop();
-  delay(6000);
+  delay(1000);
 }
 //https://randomnerdtutorials.com/esp32-deep-sleep-arduino-ide-wake-up-sources/
 //https://www.digikey.com/en/maker/projects/send-and-receive-messages-to-your-iot-devices-using-mqtt/39ed5690cc46473abe8904c8f960341f?utm_adgroup=General&utm_term=&slid=&gclid=CjwKCAiArJjvBRACEiwA-Wiqq_DcwDJ3EqaccZF2aFgkJBe3oi3cYWcfste0hW4MC4N6vyfVWMc2NxoCqDEQAvD_BwE&utm_campaign=Dynamic+Search_EN_Product&utm_medium=cpc&utm_source=google
