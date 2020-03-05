@@ -3,10 +3,9 @@
 #define sensor3 34
 
 int a,b,c,indice;
-int sensorValue1[7];
-int sensorValue2[7];
-int sensorValue3[7];
-boolean trintaHoras;
+int sensorValue1[100];
+int sensorValue2[100];
+int sensorValue3[100];
 
 void setup() {
   Serial.begin(115200);
@@ -15,44 +14,43 @@ void setup() {
     sensorValue2[i] = 5000;
     sensorValue3[i] = 5000;
   }
-  trintaHoras = false;
+
   indice = 0;
 }
 
 void loop() {
-  if (trintaHoras == false){
-    Serial.println("contando 30 horas");
-    delay(108000000);
-    trintaHoras = true;
-  }
-  if(indice < 7){
+
+  if(indice < 100){
     a = analogRead(sensor1);
     b = analogRead(sensor2);
     c = analogRead(sensor3);
     
-    if(a<sensorValue1[indice]){
-      sensorValue1[indice] = a;
-    }
-    if(b<sensorValue2[indice]){
-      sensorValue2[indice] = b;
-    }
-    if(c<sensorValue3[indice]){
-      sensorValue3[indice] = c;
-    }
+    
+    sensorValue1[indice] = a;
+
+    sensorValue2[indice] = b;
+
+    sensorValue3[indice] = c;
+    
     indice ++;
-    }else{
+    }
+    else{
       Serial.println("sensor1");
-      for(int j = 0 ; j < 7 ; j++){
+      for(int j = 0 ; j < 100 ; j++){
         Serial.print(" " + (String)sensorValue1[j]);
       }
+      Serial.println(" ");
+
       Serial.println("sensor2");
-      for(int j = 0 ; j < 7 ; j++){
+      for(int j = 0 ; j < 100 ; j++){
         Serial.print(" " + (String)sensorValue2[j]);
       }
+      Serial.println(" ");
+
       Serial.println("sensor3");
-      for(int j = 0 ; j < 7 ; j++){
+      for(int j = 0 ; j < 100 ; j++){
         Serial.print(" " + (String)sensorValue3[j]);
       }
     }
-  delay(600000);
+  delay(30000);
 }
