@@ -11,7 +11,7 @@ const char *password =  "raspberry"; // password of the WiFi network
 #define topicToSubscribe "Regra" // Topic to subscribe
 
 // Name of our device, must be unique
-#define ID "NodeMCU"
+#define ID "ESP32"
 
 //broker
 int port = 1883; // port
@@ -25,6 +25,7 @@ PubSubClient client(wclient); //constructor receive a wifi client object
 #define sensor1 36
 #define sensor2 39
 #define sensor3 34
+
 int selectedSensor, sensorValue, sleepTime;
 int inputs[] = {0,1,2};
 bool lastMessage;
@@ -44,12 +45,12 @@ void reconnect();
 void mqtt_callback(char* topicSubscribed, byte* payload, unsigned int length);
 void reconnectMQTT();
 
-//set address n' port
-void initMqtt(){
-  client.setServer(borkerIP,port);
-  client.setCallback(mqtt_callback);
-}
 
+//#################RELÉ###############//
+//####################################//
+
+
+//################WI-FI###############//
 // Connect to WiFi network
 void setup_wifi() {
   if (WiFi.status() == WL_CONNECTED){
@@ -63,33 +64,10 @@ void setup_wifi() {
     delay(500);
     Serial.print(".");
   }
-  digitalWrite(ledpinWiFierro,LOW);// off if is not connected
+  digitalWrite(ledpinWiFierro,LOW);// off if is connected
   Serial.println("WiFi connected");
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
-}
-
-// Reconnect to client
-void reconnect() {
-  // Loop until we're reconnected
-  while (!client.connected()) {
-    Serial.print("Attempting MQTT connection...");
-    // Attempt to connect
-    digitalWrite(ledPinMQTTerro,HIGH); // on if is not connected
-    if (client.connect(ID,"JoffrMQTT","mosquito")) {
-      digitalWrite(ledPinMQTTerro,LOW); // off if is not connected
-      Serial.println("connected");
-      Serial.print("Publishing to: ");
-      Serial.println(topicToPublish);
-      Serial.println('\n');
-      client.subscribe(topicToSubscribe);
-    } else {
-      Serial.println("try again in 5 seconds");
-      // Wait 5 seconds before retrying
-      delay(2000);
-      digitalWrite(ledPinMQTTerro,HIGH); // on if is not connected
-    }
-  }
 }
 
 void verifyConnections(void){
@@ -98,9 +76,23 @@ void verifyConnections(void){
   }
   setup_wifi();
 }
+//####################################//
+
+//#################MQTT###############//
+//set address n' port
+void initMqtt(){
+  client.setServer(borkerIP,port);
+  client.setCallback(mqtt_callback);
+}
 
 void mqtt_callback(char* topicSubscribed, byte* payload, unsigned int length){
   Serial.println(topicSubscribed);
+
+  //payload é um vetor que contém as instruções a serem seguidas,
+  //é obtido através da inscrição no tópico que é alterado no Rasp.
+  // posição            0                 1
+  //payload = [sensorParaMonitorar, estadoDaBomba]
+  
   if(length ==2){
     char p = (char)payload[0];
     if(p == '1'){
@@ -125,15 +117,47 @@ void mqtt_callback(char* topicSubscribed, byte* payload, unsigned int length){
     }
   }
 }
+//####################################//
 
+
+//###########WI-FI / MQTT#############//
+
+// Reconnect to client
+void reconnect() {
+  // Loop until we're reconnected
+  while (!client.connected()) {
+    Serial.print("Attempting MQTT connection...");
+    // Attempt to connect
+    digitalWrite(ledPinMQTTerro,HIGH); // on if is not connected
+    if (client.connect(ID,"JoffrMQTT","mosquito")) {
+      digitalWrite(ledPinMQTTerro,LOW); // off if is not connected
+      Serial.println("connected");
+      Serial.print("Publishing to: ");
+      Serial.println(topicToPublish);
+      Serial.println('\n');
+      client.subscribe(topicToSubscribe);
+    } else {
+      Serial.println("try again in 5 seconds");
+      // Wait 5 seconds before retrying
+      delay(2000);
+      digitalWrite(ledPinMQTTerro,HIGH); // on if is not connected
+    }
+  }
+}
+//####################################//
+
+
+//##############SENSORES##############//
 void request(int selectedSensor){
   sensorValue += analogRead(selectedSensor);
 }
+//####################################//
+
+//###########SENSORES / MQTT##########//
 void sendOutputState(void){
   for(int i = 0; i<numberOfSamples; i++){
     request(selectedSensor);
   }
- 
   sensorValue = map(sensorValue,0,4095,0,1023);
   sensorValue = sensorValue/numberOfSamples;
   Serial.print("Average: ");
@@ -163,11 +187,15 @@ void setup() {
   initMqtt();
   
 }
+//####################################//
+
+
+//###############FUZZY################//
+//####################################//
+
 
 void loop() {
-  
-   // Reconnect if connection is lost
-  
+  // Reconnect if connection is lost
   verifyConnections();
   if(lastMessage){
     Serial.print("sensor utilizado: ");
